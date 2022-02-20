@@ -1,10 +1,40 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 public class Main {
 
     private static boolean threeSum(int[] array) {
+        int l = array.length;
+        int i = 0;
+        int j;
+        int k;
+
+        Arrays.sort(array);
+
+        while (i < l - 1) {
+            j = i + 1;
+            k = l - 1;
+
+            int currI = array[i];
+
+            while (j < k) {
+                int currJ = array[j];
+                int currK = array[k];
+                int sum = currI + currJ + currK;
+
+                if (sum < 0) {
+                    j++;
+                } else if (sum > 0) {
+                    k--;
+                } else {
+                    return true;
+                }
+            }
+
+            i++;
+        }
 
         return false;
     }
