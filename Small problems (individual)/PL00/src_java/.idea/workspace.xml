@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7bfa46b5-2464-4978-832d-44178d1978eb" name="Changes" comment="" />
+    <list default="true" id="7bfa46b5-2464-4978-832d-44178d1978eb" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../../../PL00/src/.idea/workspace.xml" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
   </component>
   <component name="ProjectId" id="25OQNib6k7RY77j8adkiKktOIJx" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -72,6 +74,8 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/src" />
   </component>
@@ -96,6 +100,7 @@
       <option name="presentableId" value="Default" />
       <updated>1645395619474</updated>
       <workItem from="1645395619476" duration="53000" />
+      <workItem from="1645521558299" duration="19000" />
     </task>
     <servers />
   </component>
