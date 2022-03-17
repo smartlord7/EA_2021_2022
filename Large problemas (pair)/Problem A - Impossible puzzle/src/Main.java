@@ -59,13 +59,15 @@ public class Main {
     }
 
     public static class Piece {
+        int id;
         int topLeft;
         int topRight;
         int bottomRight;
         int bottomLeft;
         boolean used;
 
-        public Piece(int topLeft, int topRight, int bottomRight, int bottomLeft) {
+        public Piece(int id, int topLeft, int topRight, int bottomRight, int bottomLeft) {
+            this.id = id;
             this.topLeft = topLeft;
             this.topRight = topRight;
             this.bottomRight = bottomRight;
@@ -147,7 +149,7 @@ public class Main {
     }
 
     public static void preProcess(Piece piece) {
-        pieces.add(piece);
+        pieces[piece.id] = piece;
 
         PieceSide p1, p2;
         RotatedPiece r;
@@ -186,10 +188,10 @@ public class Main {
     }
 
     static RotatedPiece[][] board;
+    static Piece[] pieces;
     static HashMap<PieceSide, ArrayList<RotatedPiece>> left;
     static HashMap<PieceSide, ArrayList<RotatedPiece>> up;
     static HashMap<PieceSides, ArrayList<RotatedPiece>> upLeft;
-    static ArrayList<Piece> pieces;
     static int nRows;
     static int nCols;
 
@@ -351,7 +353,7 @@ public class Main {
             left = new HashMap<PieceSide, ArrayList<RotatedPiece>>();
             up = new HashMap<PieceSide, ArrayList<RotatedPiece>>();
             upLeft = new HashMap<PieceSides, ArrayList<RotatedPiece>>();
-            pieces = new ArrayList<Piece>();
+            pieces = new Piece[n];
 
             for (int j = 0; j < n; j++) {
                 line = in.readLine();
@@ -362,7 +364,7 @@ public class Main {
                 int n3 = Integer.parseInt(st.nextToken());
                 int n4 = Integer.parseInt(st.nextToken());
 
-                Piece p = new Piece(n1, n2, n3, n4);
+                Piece p = new Piece(j, n1, n2, n3, n4);
                 preProcess(p);
             }
 
