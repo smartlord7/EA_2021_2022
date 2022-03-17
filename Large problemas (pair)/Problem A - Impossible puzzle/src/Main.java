@@ -30,6 +30,11 @@ public class Main {
             result = 31 * result + (n2 != null ? n2.hashCode() : 0);
             return result;
         }
+
+        @Override
+        public String toString() {
+            return n1 + "|" + n2;
+        }
     }
 
     public static class PieceSides {
@@ -58,6 +63,12 @@ public class Main {
             result = 31 * result + (up != null ? up.hashCode() : 0);
             return result;
         }
+
+        @Override
+        public String toString() {
+            return up.n1 + "|" + up.n2 + "\n" +
+                    left.n2;
+        }
     }
 
     public static class Piece {
@@ -75,77 +86,137 @@ public class Main {
             this.bottomLeft = bottomLeft;
         }
 
-        private static void preProcess_(PieceSide side, Piece piece, HashMap<PieceSide, ArrayList<Piece>> map) {
-            if (!map.containsKey(side)) {
-                ArrayList<Piece> list = new  ArrayList<Piece>();
-                list.add(piece);
-                map.put(side, list);
-            } else {
-                map.get(side).add(piece);
-            }
-        }
-
-        private static void preProcess2_(PieceSides sides, Piece piece, HashMap<PieceSides, ArrayList<Piece>> map) {
-            if (!map.containsKey(sides)) {
-                ArrayList<Piece> list = new  ArrayList<Piece>();
-                list.add(piece);
-                map.put(sides, list);
-            } else {
-                map.get(sides).add(piece);
-            }
-        }
-
-        public static void preProcess(Piece piece) {
-            pieces.add(piece);
-
-            PieceSide p1, p2;
-            p1 = new PieceSide(piece.topLeft, piece.topRight);
-            p2 = new PieceSide(piece.bottomLeft, piece.topLeft);
-
-            preProcess_(p1, piece, up);
-            preProcess_(p2, piece, left);
-            preProcess2_(new PieceSides(p1, p2), piece, upLeft);
-
-            p1 = new PieceSide(piece.bottomLeft, piece.topLeft);
-            p2 = new PieceSide(piece.bottomRight, piece.bottomLeft);
-
-            preProcess_(p1, piece, up);
-            preProcess_(p2, piece, left);
-            preProcess2_(new PieceSides(p1, p2), piece, upLeft);
-
-            p1 = new PieceSide(piece.bottomRight, piece.bottomLeft);
-            p2 = new PieceSide(piece.topRight, piece.bottomRight);
-
-            preProcess_(p1, piece, up);
-            preProcess_(p2, piece, left);
-            preProcess2_(new PieceSides(p1, p2), piece, upLeft);
-
-            p1 = new PieceSide(piece.topRight, piece.bottomRight);
-            p2 = new PieceSide(piece.topLeft, piece.topRight);
-
-            preProcess_(p1, piece, up);
-            preProcess_(p2, piece, left);
-            preProcess2_(new PieceSides(p1, p2), piece, upLeft);
+        @Override
+        public String toString() {
+            return topLeft + "|" + topRight + "\n" +
+                    bottomLeft + "|" + bottomRight;
         }
     }
 
-    static Piece[][] board;
-    static HashMap<PieceSide, ArrayList<Piece>> up;
-    static HashMap<PieceSide, ArrayList<Piece>> left;
-    static HashMap<PieceSides, ArrayList<Piece>> upLeft;
+    public static class RotatedPiece {
+        Piece piece;
+        int rotState;
+        String topLeft;
+        String topRight;
+        String bottomRight;
+        String bottomLeft;
+
+        public RotatedPiece() {
+        }
+
+        public static RotatedPiece rotate(Piece piece, int rotState) {
+            RotatedPiece rotPiece = new RotatedPiece();
+            rotPiece.piece = piece;
+            rotPiece.rotState = rotState;
+
+            switch (rotState) {
+                case 0 -> {
+                    rotPiece.topLeft = piece.topLeft;
+                    rotPiece.topRight = piece.topRight;
+                    rotPiece.bottomRight = piece.bottomRight;
+                    rotPiece.bottomLeft = piece.bottomLeft;
+                }
+                case 1 -> {
+                    rotPiece.topLeft = piece.bottomLeft;
+                    rotPiece.topRight = piece.topLeft;
+                    rotPiece.bottomRight = piece.topRight;
+                    rotPiece.bottomLeft = piece.bottomRight;
+                }
+                case 2 -> {
+                    rotPiece.topLeft = piece.bottomRight;
+                    rotPiece.topRight = piece.bottomLeft;
+                    rotPiece.bottomRight = piece.topLeft;
+                    rotPiece.bottomLeft = piece.topRight;
+                }
+                default -> {
+                    rotPiece.topLeft = piece.topRight;
+                    rotPiece.topRight = piece.bottomRight;
+                    rotPiece.bottomRight = piece.bottomLeft;
+                    rotPiece.bottomLeft = piece.topLeft;
+                }
+            }
+
+            return rotPiece;
+        }
+    }
+
+    private static void preProcess_(PieceSide side, RotatedPiece piece, HashMap<PieceSide, ArrayList<RotatedPiece>> map) {
+        if (!map.containsKey(side)) {
+            ArrayList<RotatedPiece> list = new ArrayList<RotatedPiece>();
+            list.add(piece);
+            map.put(side, list);
+        } else {
+            map.get(side).add(piece);
+        }
+    }
+
+    private static void preProcess2_(PieceSides sides, RotatedPiece piece, HashMap<PieceSides, ArrayList<RotatedPiece>> map) {
+        if (!map.containsKey(sides)) {
+            ArrayList<RotatedPiece> list = new ArrayList<RotatedPiece>();
+            list.add(piece);
+            map.put(sides, list);
+        } else {
+            map.get(sides).add(piece);
+        }
+    }
+
+    public static void preProcess(Piece piece) {
+        pieces.add(piece);
+
+        PieceSide p1, p2;
+        RotatedPiece r;
+
+        r = RotatedPiece.rotate(piece, 0);
+        p1 = new PieceSide(r.topLeft, r.topRight);
+        p2 = new PieceSide(r.topLeft, r.bottomLeft);
+
+        preProcess_(p1, r, up);
+        preProcess_(p2, r, left);
+        preProcess2_(new PieceSides(p1, p2), r, upLeft);
+
+        r = RotatedPiece.rotate(piece, 1);
+        p1 = new PieceSide(r.topLeft, r.topRight);
+        p2 = new PieceSide(r.topLeft, r.bottomLeft);
+
+        preProcess_(p1, r, up);
+        preProcess_(p2, r, left);
+        preProcess2_(new PieceSides(p1, p2), r, upLeft);
+
+        r = RotatedPiece.rotate(piece, 2);
+        p1 = new PieceSide(r.topLeft, r.topRight);
+        p2 = new PieceSide(r.topLeft, r.bottomLeft);
+
+        preProcess_(p1, r, up);
+        preProcess_(p2, r, left);
+        preProcess2_(new PieceSides(p1, p2), r, upLeft);
+
+        r = RotatedPiece.rotate(piece, 3);
+        p1 = new PieceSide(r.topLeft, r.topRight);
+        p2 = new PieceSide(r.topLeft, r.bottomLeft);
+
+        preProcess_(p1, r, up);
+        preProcess_(p2, r, left);
+        preProcess2_(new PieceSides(p1, p2), r, upLeft);
+    }
+
+    static RotatedPiece[][] board;
+    static HashMap<PieceSide, ArrayList<RotatedPiece>> up;
+    static HashMap<PieceSide, ArrayList<RotatedPiece>> left;
+    static HashMap<PieceSides, ArrayList<RotatedPiece>> upLeft;
     static ArrayList<Piece> pieces;
     static int nRows;
     static int nCols;
     static int n;
 
-    public static boolean solve_(Piece current, int x, int y, int n) {
+    public static boolean solve_(RotatedPiece current, int x, int y, int n) {
         if (n == 0) {
             // no pieces left to use, meaning they were all spent and so there is a solution
             return true;
         }
 
+
         // the search trespasses the grid limits
-        if (y == nCols - 1 || x > nRows - 1) {
+        if (y > nCols - 1 || x > nRows - 1) {
             return false;
         }
 
@@ -153,24 +224,24 @@ public class Main {
 
         // get the right and bottom side of the current piece
         PieceSide rightSide = new PieceSide(current.topRight, current.bottomRight);
-        PieceSide bottomSide = new PieceSide(current.bottomRight, current.bottomLeft);
+        PieceSide bottomSide = new PieceSide(current.bottomLeft, current.bottomRight);
         boolean rightSol = false;
         boolean bottomSol = false;
 
-        ArrayList<Piece> rightCandidates;
-        ArrayList<Piece> bottomCandidates;
+        ArrayList<RotatedPiece> rightCandidates;
+        ArrayList<RotatedPiece> bottomCandidates;
 
-        if (x > 0 && board[x - 1][y + 1] != null) {
-            Piece left = board[x - 1][y + 1];
+        if (x > 0 && x < nRows - 1 && board[x + 1][y - 1] != null) {
+            RotatedPiece left = board[x - 1][y + 1];
             PieceSide leftPieceRightSide = new PieceSide(left.topRight, left.bottomRight);
             bottomCandidates = upLeft.get(new PieceSides(bottomSide, leftPieceRightSide));
         } else {
             bottomCandidates = up.get(bottomSide);
         }
 
-        if (y > 0 && board[x][y - 1] != null) {
-            Piece up = board[x][y - 1];
-            PieceSide upPieceBottomSide = new PieceSide(up.bottomRight, up.bottomLeft);
+        if (y > 0 && y < nCols - 1 && board[x - 1][y + 1] != null) {
+            RotatedPiece up = board[x][y - 1];
+            PieceSide upPieceBottomSide = new PieceSide(up.bottomLeft, up.bottomRight);
             rightCandidates = upLeft.get(new PieceSides(upPieceBottomSide, rightSide));
         } else {
             rightCandidates = left.get(rightSide);
@@ -178,27 +249,27 @@ public class Main {
 
         // expand to the right
         if (rightCandidates != null) {
-            for (Piece rightCandidate : rightCandidates) {
-                if (!rightCandidate.used) {
+            for (RotatedPiece rightCandidate : rightCandidates) {
+                if (!rightCandidate.piece.used) {
 
-                    rightCandidate.used = true;
-                    rightCandidate.fixed = true;
-                    rightSol = solve_(rightCandidate, x + 1, y, n - 1);
-                    rightCandidate.fixed = false;
-                    rightCandidate.used = false;
+                    rightCandidate.piece.used = true;
+                    rightCandidate.piece.fixed = true;
+                    rightSol = solve_(rightCandidate, x, y + 1, n - 1);
+                    rightCandidate.piece.fixed = false;
+                    rightCandidate.piece.used = false;
                 }
             }
         }
 
         //expand to the bottom
         if (bottomCandidates != null) {
-            for (Piece bottomCandidate : bottomCandidates) {
-                if (!bottomCandidate.used) {
-                    bottomCandidate.used = true;
-                    bottomCandidate.fixed = false;
-                    bottomSol = solve_(bottomCandidate, x, y + 1, n - 1);
-                    bottomCandidate.fixed = false;
-                    bottomCandidate.used = false;
+            for (RotatedPiece bottomCandidate : bottomCandidates) {
+                if (!bottomCandidate.piece.used) {
+                    bottomCandidate.piece.used = true;
+                    bottomCandidate.piece.fixed = true;
+                    bottomSol = solve_(bottomCandidate, x + 1, y, n - 1);
+                    bottomCandidate.piece.fixed = false;
+                    bottomCandidate.piece.used = false;
                 }
             }
         }
@@ -211,37 +282,34 @@ public class Main {
 
         // solve for every piece as a start piece
         for (Piece piece : pieces) {
-            Piece rot;
+            RotatedPiece rot;
 
             // solve for every rotation of the start piece
 
             // solve for the normal initial piece
             piece.used = true;
-            sol = solve_(piece, 0, 0, n - 1);
+            sol = solve_(RotatedPiece.rotate(piece, 0), 0, 0, n - 1);
             if (sol) {
                 return sol;
             }
 
             // solve for the 90 deg rotated initial piece CW
-            rot = new Piece("4", "1", "2", "3");
             piece.used = true;
-            sol = solve_(rot, 0, 0, n - 1);
+            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0, n - 1);
             if (sol) {
                 return sol;
             }
 
             // solve for the 180 deg rotated initial piece CW
             piece.used = true;
-            rot = new Piece("3", "4", "1", "2");
-            sol = solve_(rot, 0, 0, n - 1);
+            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0, n - 1);
             if (sol) {
                 return sol;
             }
 
             // solve for the 270 deg rotated initial piece CW
             piece.used = true;
-            rot = new Piece("2", "3", "4", "1");
-            sol = solve_(rot, 0, 0, n - 1);
+            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0, n - 1);
             if (sol) {
                 return sol;
             }
@@ -268,10 +336,10 @@ public class Main {
             nRows = Integer.parseInt(st.nextToken());
             nCols = Integer.parseInt(st.nextToken());
 
-            board = new Piece[nRows][nCols];
-            up = new HashMap<PieceSide, ArrayList<Piece>>();
-            left = new HashMap<PieceSide, ArrayList<Piece>>();
-            upLeft = new HashMap<PieceSides, ArrayList<Piece>>();
+            board = new RotatedPiece[nRows][nCols];
+            up = new HashMap<PieceSide, ArrayList<RotatedPiece>>();
+            left = new HashMap<PieceSide, ArrayList<RotatedPiece>>();
+            upLeft = new HashMap<PieceSides, ArrayList<RotatedPiece>>();
             pieces = new ArrayList<Piece>();
 
             for (int j = 0; j < n; j++) {
@@ -284,7 +352,7 @@ public class Main {
                 String n4 = st.nextToken();
 
                 Piece p = new Piece(n1, n2, n3, n4);
-                Piece.preProcess(p);
+                preProcess(p);
             }
 
             boolean hasSol = solve(n);
