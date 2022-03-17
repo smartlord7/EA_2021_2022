@@ -110,30 +110,30 @@ public class Main {
             rotPiece.rotState = rotState;
 
             switch (rotState) {
-                case 0 -> {
+                case 0:
                     rotPiece.topLeft = piece.topLeft;
                     rotPiece.topRight = piece.topRight;
                     rotPiece.bottomRight = piece.bottomRight;
                     rotPiece.bottomLeft = piece.bottomLeft;
-                }
-                case 1 -> {
+                    break;
+                case 1:
                     rotPiece.topLeft = piece.bottomLeft;
                     rotPiece.topRight = piece.topLeft;
                     rotPiece.bottomRight = piece.topRight;
                     rotPiece.bottomLeft = piece.bottomRight;
-                }
-                case 2 -> {
+                    break;
+                case 2:
                     rotPiece.topLeft = piece.bottomRight;
                     rotPiece.topRight = piece.bottomLeft;
                     rotPiece.bottomRight = piece.topLeft;
                     rotPiece.bottomLeft = piece.topRight;
-                }
-                default -> {
+                    break;
+                default:
                     rotPiece.topLeft = piece.topRight;
                     rotPiece.topRight = piece.bottomRight;
                     rotPiece.bottomRight = piece.bottomLeft;
                     rotPiece.bottomLeft = piece.topLeft;
-                }
+                    break;
             }
 
             return rotPiece;
@@ -208,16 +208,14 @@ public class Main {
     static int nCols;
     static int n;
 
-    public static boolean solve_(RotatedPiece current, int x, int y, int n) {
-        if (n == 0) {
-            // no pieces left to use, meaning they were all spent and so there is a solution
+    public static boolean solve_(RotatedPiece current, int x, int y) {
+
+        if (x >= nRows - 1 || y >= nCols - 1) {
+            if (x == nRows - 1 && y == nCols - 1) {
+                board[x][y] = current;
+            }
+            // base case
             return true;
-        }
-
-
-        // the search trespasses the grid limits
-        if (y > nCols - 1 || x > nRows - 1) {
-            return false;
         }
 
         board[x][y] = current;
@@ -231,34 +229,20 @@ public class Main {
         ArrayList<RotatedPiece> rightCandidates;
         ArrayList<RotatedPiece> bottomCandidates;
 
-        if (x > 0 && x < nRows - 1 && board[x + 1][y - 1] != null) {
-            RotatedPiece left = board[x - 1][y + 1];
+        if (x > 0 && y > 0 && x < nRows - 1 && board[x + 1][y - 1] != null) {
+            RotatedPiece left = board[x + 1][y - 1];
             PieceSide leftPieceRightSide = new PieceSide(left.topRight, left.bottomRight);
             bottomCandidates = upLeft.get(new PieceSides(bottomSide, leftPieceRightSide));
         } else {
             bottomCandidates = up.get(bottomSide);
         }
 
-        if (y > 0 && y < nCols - 1 && board[x - 1][y + 1] != null) {
-            RotatedPiece up = board[x][y - 1];
+        if (y > 0 && x > 0 && y < nCols - 1 && board[x - 1][y + 1] != null) {
+            RotatedPiece up = board[x - 1][y + 1];
             PieceSide upPieceBottomSide = new PieceSide(up.bottomLeft, up.bottomRight);
             rightCandidates = upLeft.get(new PieceSides(upPieceBottomSide, rightSide));
         } else {
             rightCandidates = left.get(rightSide);
-        }
-
-        // expand to the right
-        if (rightCandidates != null) {
-            for (RotatedPiece rightCandidate : rightCandidates) {
-                if (!rightCandidate.piece.used) {
-
-                    rightCandidate.piece.used = true;
-                    rightCandidate.piece.fixed = true;
-                    rightSol = solve_(rightCandidate, x, y + 1, n - 1);
-                    rightCandidate.piece.fixed = false;
-                    rightCandidate.piece.used = false;
-                }
-            }
         }
 
         //expand to the bottom
@@ -266,10 +250,32 @@ public class Main {
             for (RotatedPiece bottomCandidate : bottomCandidates) {
                 if (!bottomCandidate.piece.used) {
                     bottomCandidate.piece.used = true;
-                    bottomCandidate.piece.fixed = true;
-                    bottomSol = solve_(bottomCandidate, x + 1, y, n - 1);
-                    bottomCandidate.piece.fixed = false;
-                    bottomCandidate.piece.used = false;
+                    int nextX;
+                    int nextY;
+                    if (x == nRows - 1) {
+                        nextX = 0;
+                        nextY = y + 1;
+                    } else {
+                        nextX = x + 1;
+                        nextY = y;
+                    }
+                    bottomSol = solve_(bottomCandidate, nextX, nextY);
+                    if (!bottomSol) {
+                        bottomCandidate.piece.used = false;
+                    }
+                }
+            }
+        }
+
+        // expand to the right
+        if (rightCandidates != null) {
+            for (RotatedPiece rightCandidate : rightCandidates) {
+                if (!rightCandidate.piece.used) {
+                    rightCandidate.piece.used = true;
+                    rightSol = solve_(rightCandidate, x, y + 1);
+                    if (!rightSol) {
+                        rightCandidate.piece.used = false;
+                    }
                 }
             }
         }
@@ -288,28 +294,28 @@ public class Main {
 
             // solve for the normal initial piece
             piece.used = true;
-            sol = solve_(RotatedPiece.rotate(piece, 0), 0, 0, n - 1);
+            sol = solve_(RotatedPiece.rotate(piece, 0), 0, 0);
             if (sol) {
                 return sol;
             }
 
             // solve for the 90 deg rotated initial piece CW
             piece.used = true;
-            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0, n - 1);
+            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
             if (sol) {
                 return sol;
             }
 
             // solve for the 180 deg rotated initial piece CW
             piece.used = true;
-            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0, n - 1);
+            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
             if (sol) {
                 return sol;
             }
 
             // solve for the 270 deg rotated initial piece CW
             piece.used = true;
-            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0, n - 1);
+            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
             if (sol) {
                 return sol;
             }
@@ -318,6 +324,34 @@ public class Main {
         }
 
         return sol;
+    }
+
+    public static void printBoard() {
+        for (int i = 0; i < nRows; i++) {
+            for (int j = 0; j < nCols; j++) {
+                RotatedPiece current = board[i][j];
+
+                System.out.print(current.topLeft + " " + current.topRight);
+
+                if (j < nCols - 1) {
+                    System.out.print("  ");
+                }
+            }
+
+            System.out.print("\n");
+
+            for (int j = 0; j < nCols; j++) {
+                RotatedPiece current = board[i][j];
+
+                System.out.print(current.bottomLeft + " " + current.bottomRight);
+
+                if (j < nCols - 1) {
+                    System.out.print("  ");
+                }
+            }
+
+            System.out.print("\n\n");
+        }
     }
 
     public static void main(String[] args) throws IOException {
@@ -358,7 +392,7 @@ public class Main {
             boolean hasSol = solve(n);
 
             if (hasSol) {
-                System.out.println("possible puzzle!");
+                printBoard();
             } else {
                 System.out.println("impossible puzzle!");
             }
