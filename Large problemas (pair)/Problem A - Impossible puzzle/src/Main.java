@@ -15,20 +15,14 @@ public class Main {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            PieceSide other = (PieceSide) o;
 
-            PieceSide pieceSide = (PieceSide) o;
-
-            if (n1 != null ? !n1.equals(pieceSide.n1) : pieceSide.n1 != null) return false;
-            return n2 != null ? n2.equals(pieceSide.n2) : pieceSide.n2 == null;
+            return n1.equals(other.n1) && n2.equals(other.n2);
         }
 
         @Override
         public int hashCode() {
-            int result = n1 != null ? n1.hashCode() : 0;
-            result = 31 * result + (n2 != null ? n2.hashCode() : 0);
-            return result;
+            return 31 * n1.hashCode() + n2.hashCode();
         }
 
         @Override
@@ -48,20 +42,13 @@ public class Main {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            PieceSides that = (PieceSides) o;
-
-            if (left != null ? !left.equals(that.left) : that.left != null) return false;
-            return up != null ? up.equals(that.up) : that.up == null;
+            PieceSides other = (PieceSides) o;
+            return left.equals(other.left) && up.equals(other.up);
         }
 
         @Override
         public int hashCode() {
-            int result = left != null ? left.hashCode() : 0;
-            result = 31 * result + (up != null ? up.hashCode() : 0);
-            return result;
+            return 31 * left.hashCode() + up.hashCode();
         }
 
         @Override
@@ -276,24 +263,28 @@ public class Main {
 
             // solve for the normal initial piece
             sol = solve_(RotatedPiece.rotate(piece, 0), 0, 0);
+            
             if (sol) {
                 return true;
             }
 
             // solve for the 90 deg rotated initial piece CW
             sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
+            
             if (sol) {
                 return true;
             }
 
             // solve for the 180 deg rotated initial piece CW
             sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
+            
             if (sol) {
                 return true;
             }
 
             // solve for the 270 deg rotated initial piece CW
             sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
+            
             if (sol) {
                 return true;
             }
@@ -307,6 +298,10 @@ public class Main {
             for (int j = 0; j < nCols; j++) {
                 RotatedPiece current = board[i][j];
 
+                if (current == null) {
+                    continue;
+                }
+
                 System.out.print(current.topLeft + " " + current.topRight);
 
                 if (j < nCols - 1) {
@@ -318,6 +313,10 @@ public class Main {
 
             for (int j = 0; j < nCols; j++) {
                 RotatedPiece current = board[i][j];
+
+                if (current == null) {
+                    continue;
+                }
 
                 System.out.print(current.bottomLeft + " " + current.bottomRight);
 
