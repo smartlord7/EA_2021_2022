@@ -5,10 +5,10 @@ import java.util.*;
 
 public class Main {
     public static class PieceSide {
-        final String n1;
-        final String n2;
+        final int n1;
+        final int n2;
 
-        public PieceSide(String n1, String n2) {
+        public PieceSide(int n1, int n2) {
             this.n1 = n1;
             this.n2 = n2;
         }
@@ -17,12 +17,12 @@ public class Main {
         public boolean equals(Object o) {
             PieceSide other = (PieceSide) o;
 
-            return n1.equals(other.n1) && n2.equals(other.n2);
+            return n1 == other.n1 && n2 == other.n2;
         }
 
         @Override
         public int hashCode() {
-            return 31 * n1.hashCode() + n2.hashCode();
+            return 31 * n1 + n2;
         }
 
         @Override
@@ -59,13 +59,13 @@ public class Main {
     }
 
     public static class Piece {
-        String topLeft;
-        String topRight;
-        String bottomRight;
-        String bottomLeft;
+        int topLeft;
+        int topRight;
+        int bottomRight;
+        int bottomLeft;
         boolean used;
 
-        public Piece(String topLeft, String topRight, String bottomRight, String bottomLeft) {
+        public Piece(int topLeft, int topRight, int bottomRight, int bottomLeft) {
             this.topLeft = topLeft;
             this.topRight = topRight;
             this.bottomRight = bottomRight;
@@ -82,10 +82,10 @@ public class Main {
     public static class RotatedPiece {
         Piece piece;
         int rotState;
-        String topLeft;
-        String topRight;
-        String bottomRight;
-        String bottomLeft;
+        int topLeft;
+        int topRight;
+        int bottomRight;
+        int bottomLeft;
 
         public RotatedPiece() {
         }
@@ -357,10 +357,10 @@ public class Main {
                 line = in.readLine();
                 st = new StringTokenizer(line);
 
-                String n1 = st.nextToken();
-                String n2 = st.nextToken();
-                String n3 = st.nextToken();
-                String n4 = st.nextToken();
+                int n1 = Integer.parseInt(st.nextToken());
+                int n2 = Integer.parseInt(st.nextToken());
+                int n3 = Integer.parseInt(st.nextToken());
+                int n4 = Integer.parseInt(st.nextToken());
 
                 Piece p = new Piece(n1, n2, n3, n4);
                 preProcess(p);
