@@ -77,7 +77,6 @@ public class Main {
         String bottomRight;
         String bottomLeft;
         boolean used;
-        boolean fixed;
 
         public Piece(String topLeft, String topRight, String bottomRight, String bottomLeft) {
             this.topLeft = topLeft;
@@ -170,160 +169,137 @@ public class Main {
         p1 = new PieceSide(r.topLeft, r.topRight);
         p2 = new PieceSide(r.topLeft, r.bottomLeft);
 
-        preProcess_(p1, r, up);
         preProcess_(p2, r, left);
+        preProcess_(p1, r, up);
         preProcess2_(new PieceSides(p1, p2), r, upLeft);
 
         r = RotatedPiece.rotate(piece, 1);
         p1 = new PieceSide(r.topLeft, r.topRight);
         p2 = new PieceSide(r.topLeft, r.bottomLeft);
 
-        preProcess_(p1, r, up);
         preProcess_(p2, r, left);
+        preProcess_(p1, r, up);
         preProcess2_(new PieceSides(p1, p2), r, upLeft);
 
         r = RotatedPiece.rotate(piece, 2);
         p1 = new PieceSide(r.topLeft, r.topRight);
         p2 = new PieceSide(r.topLeft, r.bottomLeft);
 
-        preProcess_(p1, r, up);
         preProcess_(p2, r, left);
+        preProcess_(p1, r, up);
         preProcess2_(new PieceSides(p1, p2), r, upLeft);
 
         r = RotatedPiece.rotate(piece, 3);
         p1 = new PieceSide(r.topLeft, r.topRight);
         p2 = new PieceSide(r.topLeft, r.bottomLeft);
 
-        preProcess_(p1, r, up);
         preProcess_(p2, r, left);
+        preProcess_(p1, r, up);
         preProcess2_(new PieceSides(p1, p2), r, upLeft);
     }
 
     static RotatedPiece[][] board;
-    static HashMap<PieceSide, ArrayList<RotatedPiece>> up;
     static HashMap<PieceSide, ArrayList<RotatedPiece>> left;
+    static HashMap<PieceSide, ArrayList<RotatedPiece>> up;
     static HashMap<PieceSides, ArrayList<RotatedPiece>> upLeft;
     static ArrayList<Piece> pieces;
     static int nRows;
     static int nCols;
-    static int n;
 
     public static boolean solve_(RotatedPiece current, int x, int y) {
+        current.piece.used = true;
+        board[x][y] = current;
 
-        if (x >= nRows - 1 || y >= nCols - 1) {
-            if (x == nRows - 1 && y == nCols - 1) {
-                board[x][y] = current;
-            }
+        if (x == nRows - 1 && y == nCols - 1) {
             // base case
             return true;
         }
 
-        board[x][y] = current;
-
         // get the right and bottom side of the current piece
-        PieceSide rightSide = new PieceSide(current.topRight, current.bottomRight);
-        PieceSide bottomSide = new PieceSide(current.bottomLeft, current.bottomRight);
-        boolean rightSol = false;
-        boolean bottomSol = false;
+        boolean sol = false;
 
-        ArrayList<RotatedPiece> rightCandidates;
-        ArrayList<RotatedPiece> bottomCandidates;
+        ArrayList<RotatedPiece> candidates;
 
-        if (x > 0 && y > 0 && x < nRows - 1 && board[x + 1][y - 1] != null) {
-            RotatedPiece left = board[x + 1][y - 1];
-            PieceSide leftPieceRightSide = new PieceSide(left.topRight, left.bottomRight);
-            bottomCandidates = upLeft.get(new PieceSides(bottomSide, leftPieceRightSide));
+        if (y == nCols - 1) {
+            // if we are in the last cell of the current row i.e. about to jump to the next row
+            RotatedPiece prevRowUpPiece = board[x][0];
+            PieceSide upPieceBottomSide = new PieceSide(prevRowUpPiece.bottomLeft, prevRowUpPiece.bottomRight);
+            candidates = up.get(upPieceBottomSide);
+        } else if (x > 0 && board[x - 1][y + 1] != null) {
+            // if we aren't in the first row/column
+            PieceSide rightSide = new PieceSide(current.topRight, current.bottomRight);
+            RotatedPiece upPiece = board[x - 1][y + 1];
+            PieceSide upPieceBottomSide = new PieceSide(upPiece.bottomLeft, upPiece.bottomRight);
+            candidates = upLeft.get(new PieceSides(upPieceBottomSide, rightSide));
         } else {
-            bottomCandidates = up.get(bottomSide);
-        }
-
-        if (y > 0 && x > 0 && y < nCols - 1 && board[x - 1][y + 1] != null) {
-            RotatedPiece up = board[x - 1][y + 1];
-            PieceSide upPieceBottomSide = new PieceSide(up.bottomLeft, up.bottomRight);
-            rightCandidates = upLeft.get(new PieceSides(upPieceBottomSide, rightSide));
-        } else {
-            rightCandidates = left.get(rightSide);
-        }
-
-        //expand to the bottom
-        if (bottomCandidates != null) {
-            for (RotatedPiece bottomCandidate : bottomCandidates) {
-                if (!bottomCandidate.piece.used) {
-                    bottomCandidate.piece.used = true;
-                    int nextX;
-                    int nextY;
-                    if (x == nRows - 1) {
-                        nextX = 0;
-                        nextY = y + 1;
-                    } else {
-                        nextX = x + 1;
-                        nextY = y;
-                    }
-                    bottomSol = solve_(bottomCandidate, nextX, nextY);
-                    if (!bottomSol) {
-                        bottomCandidate.piece.used = false;
-                    }
-                }
-            }
+            // if we are in the first row, including the first cell
+            PieceSide rightSide = new PieceSide(current.topRight, current.bottomRight);
+            candidates = left.get(rightSide);
         }
 
         // expand to the right
-        if (rightCandidates != null) {
-            for (RotatedPiece rightCandidate : rightCandidates) {
-                if (!rightCandidate.piece.used) {
-                    rightCandidate.piece.used = true;
-                    rightSol = solve_(rightCandidate, x, y + 1);
-                    if (!rightSol) {
-                        rightCandidate.piece.used = false;
+        if (candidates != null) {
+            for (RotatedPiece candidate : candidates) {
+                if (!candidate.piece.used) {
+                    int nextX;
+                    int nextY;
+
+                    if (y == nCols - 1) {
+                        nextX = x + 1;
+                        nextY = 0;
+                    } else {
+                        nextX = x;
+                        nextY = y + 1;
                     }
+                    sol |= solve_(candidate, nextX, nextY);
                 }
             }
+        } else {
+            return false;
         }
 
-        return rightSol || bottomSol;
-    }
-
-    public static boolean solve(int n) {
-        boolean sol = false;
-
-        // solve for every piece as a start piece
-        for (Piece piece : pieces) {
-            RotatedPiece rot;
-
-            // solve for every rotation of the start piece
-
-            // solve for the normal initial piece
-            piece.used = true;
-            sol = solve_(RotatedPiece.rotate(piece, 0), 0, 0);
-            if (sol) {
-                return sol;
-            }
-
-            // solve for the 90 deg rotated initial piece CW
-            piece.used = true;
-            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
-            if (sol) {
-                return sol;
-            }
-
-            // solve for the 180 deg rotated initial piece CW
-            piece.used = true;
-            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
-            if (sol) {
-                return sol;
-            }
-
-            // solve for the 270 deg rotated initial piece CW
-            piece.used = true;
-            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
-            if (sol) {
-                return sol;
-            }
-
-            piece.used = false;
+        if (!sol) {
+            // if there is no solution with the current piece in this point, unmark it as used and remove it from the board
+            current.piece.used = false;
+            board[x][y] = null;
         }
 
         return sol;
+    }
+
+    public static boolean solve(int n) {
+        boolean sol;
+
+        // solve for every piece as a start piece
+        for (Piece piece : pieces) {
+            // solve for every rotation of the start piece
+
+            // solve for the normal initial piece
+            sol = solve_(RotatedPiece.rotate(piece, 0), 0, 0);
+            if (sol) {
+                return true;
+            }
+
+            // solve for the 90 deg rotated initial piece CW
+            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
+            if (sol) {
+                return true;
+            }
+
+            // solve for the 180 deg rotated initial piece CW
+            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
+            if (sol) {
+                return true;
+            }
+
+            // solve for the 270 deg rotated initial piece CW
+            sol = solve_(RotatedPiece.rotate(piece, 1), 0, 0);
+            if (sol) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static void printBoard() {
@@ -366,13 +342,13 @@ public class Main {
             line = in.readLine();
             st = new StringTokenizer(line);
 
-            n = Integer.parseInt(st.nextToken());
+            int n = Integer.parseInt(st.nextToken());
             nRows = Integer.parseInt(st.nextToken());
             nCols = Integer.parseInt(st.nextToken());
 
             board = new RotatedPiece[nRows][nCols];
-            up = new HashMap<PieceSide, ArrayList<RotatedPiece>>();
             left = new HashMap<PieceSide, ArrayList<RotatedPiece>>();
+            up = new HashMap<PieceSide, ArrayList<RotatedPiece>>();
             upLeft = new HashMap<PieceSides, ArrayList<RotatedPiece>>();
             pieces = new ArrayList<Piece>();
 
