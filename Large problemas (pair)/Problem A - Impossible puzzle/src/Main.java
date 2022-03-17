@@ -241,8 +241,6 @@ public class Main {
                     sol |= solve_(candidate, nextX, nextY);
                 }
             }
-        } else {
-            return false;
         }
 
         if (!sol) {
@@ -325,7 +323,11 @@ public class Main {
                 }
             }
 
-            System.out.print("\n\n");
+            if (i != nRows - 1) {
+                System.out.print("\n\n");
+            } else {
+                System.out.print("\n");
+            }
         }
     }
 
