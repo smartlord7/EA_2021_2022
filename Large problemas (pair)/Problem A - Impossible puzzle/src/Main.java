@@ -194,8 +194,13 @@ public class Main {
     static HashMap<PieceSides, ArrayList<RotatedPiece>> upLeft;
     static int nRows;
     static int nCols;
+    static long startTime;
 
     public static boolean solve_(RotatedPiece current, int x, int y) {
+        if (System.currentTimeMillis() - startTime > 350) {
+            return false;
+        }
+
         current.piece.used = true;
         board[x][y] = current;
 
@@ -367,6 +372,8 @@ public class Main {
                 Piece p = new Piece(j, n1, n2, n3, n4);
                 preProcess(p);
             }
+
+            startTime = System.currentTimeMillis();
 
             boolean hasSol = solve(n);
 
