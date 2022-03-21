@@ -192,15 +192,13 @@ public class Main {
     static HashMap<PieceSide, ArrayList<RotatedPiece>> left;
     static HashMap<PieceSide, ArrayList<RotatedPiece>> up;
     static HashMap<PieceSides, ArrayList<RotatedPiece>> upLeft;
+    static HashMap<PieceSide, Integer> piecesOccurrences;
     static int nRows;
     static int nCols;
     static long startTime;
+    static int[] values;
 
     public static boolean solve_(RotatedPiece current, int x, int y) {
-        if (System.currentTimeMillis() - startTime > 350) {
-            return false;
-        }
-
         current.piece.used = true;
         board[x][y] = current;
 
@@ -338,6 +336,18 @@ public class Main {
         }
     }
 
+    public static boolean predict() {
+        int oddCounter = 0;
+
+        for (int num : values) {
+            if (num % 2 != 0) {
+                oddCounter++;
+            }
+        }
+
+        return oddCounter <= 4;
+    }
+
     public static void main(String[] args) throws IOException {
         String line;
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -358,7 +368,9 @@ public class Main {
             left = new HashMap<PieceSide, ArrayList<RotatedPiece>>();
             up = new HashMap<PieceSide, ArrayList<RotatedPiece>>();
             upLeft = new HashMap<PieceSides, ArrayList<RotatedPiece>>();
+            piecesOccurrences = new HashMap<PieceSide, Integer>();
             pieces = new Piece[n];
+            values = new int[1000];
 
             for (int j = 0; j < n; j++) {
                 line = in.readLine();
@@ -368,12 +380,20 @@ public class Main {
                 int n2 = Integer.parseInt(st.nextToken());
                 int n3 = Integer.parseInt(st.nextToken());
                 int n4 = Integer.parseInt(st.nextToken());
-
+                values[n1]++;
+                values[n2]++;
+                values[n3]++;
+                values[n4]++;
                 Piece p = new Piece(j, n1, n2, n3, n4);
                 preProcess(p);
             }
 
             startTime = System.currentTimeMillis();
+
+            if (!predict()) {
+                System.out.println("impossible puzzle!");
+                continue;
+            }
 
             boolean hasSol = solve(n);
 
