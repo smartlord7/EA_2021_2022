@@ -4,62 +4,52 @@ import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 
 public class Main {
+    private int bestSol = -1;
 
-    private int n;
-    private boolean[][] graph;
-    private int best;
-    private int[] neighbours;
+    private void getMaximumIndependentSet(int currNode, int size, int nNodes, int[] count, boolean[][] adjacencyMatrix) {
+        int ub;
 
-    private void solve_(int v, int size) {
-        int upperBound;
-
-        if (size > best) {
-            best = size;
+        if (size > bestSol) {
+            bestSol = size;
         }
 
-        upperBound = 0;
-        for (int i = v + 1; i < n; i++) {
-            if (neighbours[i] == 0) {
-                upperBound++;
+        ub = 0;
+        for (int i = currNode + 1; i < nNodes; i++) {
+            if (count[i] == 0) {
+                ub++;
             }
         }
 
-        if (size + upperBound <= best) {
+        if (size + ub <= bestSol) {
             return;
         }
 
-        for (int i = v + 1; i < n; i++) {
-            if (graph[i][v]) {
-                neighbours[i]++;
+        for (int i = currNode + 1; i < nNodes; i++) {
+            if (adjacencyMatrix[i][currNode]) {
+                count[i]++;
             }
         }
 
-        for (int i = v + 1; i < n; i++) {
-            if (neighbours[i] == 0) {
-                solve_(i, size + 1);
+        for (int i = currNode + 1; i < nNodes; i++) {
+            if (count[i] == 0) {
+                getMaximumIndependentSet(i, size + 1, nNodes, count, adjacencyMatrix);
             }
         }
 
-        for (int i = v + 1; i < n; i++) {
-            if (graph[i][v]) {
-                neighbours[i]--;
+        for (int i = currNode + 1; i < nNodes; i++) {
+            if (adjacencyMatrix[i][currNode]) {
+                count[i]--;
             }
         }
-    }
-
-    private void solve() {
-        best = Integer.MIN_VALUE;
-        neighbours = new int[n];
-        for (int i = 0; i < n; i++) {
-            solve_(i, 1);
-        }
-        System.out.println(best);
     }
 
     public Main() throws IOException {
-        int m;
-        int id1;
-        int id2;
+        int nNodes;
+        int nConnections;
+        int node1;
+        int node2;
+        boolean[][] adjMatrix;
+        int[] count;
         String line;
         BufferedReader in;
         StringTokenizer st;
@@ -68,20 +58,25 @@ public class Main {
 
         while ((line = in.readLine()) != null && line.length() != 0) {
             st = new StringTokenizer(line);
-            n = Integer.parseInt(st.nextToken());
-            m = Integer.parseInt(st.nextToken());
-            graph = new boolean[n][n];
+            nNodes = Integer.parseInt(st.nextToken());
+            nConnections = Integer.parseInt(st.nextToken());
+            adjMatrix = new boolean[nNodes][nNodes];
+            count = new int[nNodes];
 
-            for (int i = 0; i < m; i++) {
+            for (int i = 0; i < nConnections; i++) {
                 line = in.readLine();
                 st = new StringTokenizer(line);
-                id1 = Integer.parseInt(st.nextToken());
-                id2 = Integer.parseInt(st.nextToken());
-                graph[id1][id2] = true;
-                graph[id2][id1] = true;
+                node1 = Integer.parseInt(st.nextToken());
+                node2 = Integer.parseInt(st.nextToken());
+                adjMatrix[node1][node2] = true;
+                adjMatrix[node2][node1] = true;
             }
 
-            solve();
+            for (int i = 0; i < nNodes; i++) {
+                getMaximumIndependentSet(i, 1, nNodes, count, adjMatrix);
+            }
+
+            System.out.println(bestSol);
         }
     }
 
