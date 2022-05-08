@@ -13,15 +13,15 @@ public class Main {
         graph.get(v).add(u);
     }
 
-    private void solve_(ArrayList<ArrayList<Integer>> nNodes, int u, boolean[] visited, int[] dfs, int[] low, int parent, boolean[] articulationPoints) {
+    private void solve_(ArrayList<ArrayList<Integer>> graph, int u, boolean[] visited, int[] dfs, int[] low, int parent, boolean[] articulationPoints) {
         int children = 0;
         visited[u] = true;
         dfs[u] = low[u] = ++t;
 
-        for (Integer v : nNodes.get(u)) {
+        for (Integer v : graph.get(u)) {
             if (!visited[v]) {
                 children++;
-                solve_(nNodes, v, visited, dfs, low, u, articulationPoints);
+                solve_(graph, v, visited, dfs, low, u, articulationPoints);
 
                 low[u] = Math.min(low[u], low[v]);
 
