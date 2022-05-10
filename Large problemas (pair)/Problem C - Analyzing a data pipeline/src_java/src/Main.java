@@ -4,11 +4,16 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class Main {
+
+    //TODO Use topological-sort with in-degree
+    //TODO Join cycle detection with connectivity (use DFS)
+
     private boolean[] hasIncomingEdges;
     private byte[] nodeCosts;
     private short nNodes;
     private short source;
     private short sink;
+    private short nVisited;
     private ArrayList<ArrayList<Short>> graph;
 
     private boolean hasGraphOneSourceAndSink() {
@@ -45,35 +50,41 @@ public class Main {
         return true;
     }
 
-    private boolean isGraphConnected() {
+    private void getMinParallelizationCost() {
         boolean[] visited;
         short next;
-        int nVisited;
+        int minParallelizationCost;
+        int bottleneckCost;
         Queue<Short> queue;
 
         visited = new boolean[nNodes];
         queue = new LinkedList<Short>();
 
-        nVisited = 1;
+        minParallelizationCost = nodeCosts[source];
         visited[source] = true;
         queue.add(source);
 
         while (!queue.isEmpty()) {
             next = queue.poll();
-
+            bottleneckCost = -1;
             for (Short neighbour : graph.get(next)) {
                 if (!visited[neighbour]) {
                     visited[neighbour] = true;
                     queue.add(neighbour);
-                    nVisited++;
+                }
+
+                if (nodeCosts[neighbour] > bottleneckCost) {
+                    bottleneckCost = nodeCosts[neighbour];
                 }
             }
+
+            minParallelizationCost += bottleneckCost;
         }
 
-        return nVisited == nNodes;
+        System.out.println(minParallelizationCost);
     }
 
-    private boolean hasGraphCycle_(short node, boolean[] visited, boolean[] recStack) {
+    private boolean hasGraphCycles(short node, boolean[] visited, boolean[] recStack) {
         List<Short> neighbours;
 
         if (recStack[node]) {
@@ -85,11 +96,12 @@ public class Main {
         }
 
         visited[node] = true;
+        nVisited++;
         recStack[node] = true;
         neighbours = graph.get(node);
 
         for (Short c: neighbours) {
-            if (hasGraphCycle_(c, visited, recStack)) {
+            if (hasGraphCycles(c, visited, recStack)) {
                 return true;
             }
         }
@@ -99,76 +111,68 @@ public class Main {
         return false;
     }
 
-    private boolean hasGraphCycle() {
+    private boolean isGraphConnectedAndHasNoCycles() {
         boolean[] visited;
         boolean[] recStack;
-        short i;
 
         visited = new boolean[nNodes];
         recStack = new boolean[nNodes];
-        i = 0;
 
-        while (i < nNodes) {
-            if (hasGraphCycle_(i, visited, recStack)) {
-                return true;
-            }
-
-            i++;
-        }
-
-        return false;
-    }
-
-    private void topologicalSort_(short v, boolean[] visited, Stack<Short> stack) {
-        visited[v] = true;
-        Collections.reverse(graph.get(v));
-
-        for (Short neighbour : graph.get(v)) {
-            if (!visited[neighbour]) {
-                topologicalSort_(neighbour, visited, stack);
-            }
-        }
-
-        stack.push(v);
+        return !hasGraphCycles(source, visited, recStack) && nVisited == nNodes;
     }
 
     private void topologicalSort() {
-        boolean[] visited;
         short i;
+        short current;
+        short[] inDegrees;
         int totalCost;
         StringBuilder sb;
-        Stack<Short> stack;
+        TreeSet<Short> multiset;
+        LinkedList<Short> l;
 
+        inDegrees = new short[nNodes];
         totalCost = 0;
-        sb = new StringBuilder("");
-        stack = new Stack<Short>();
-        visited = new boolean[nNodes];
+        sb = new StringBuilder();
+        multiset = new TreeSet<Short>((j, k) -> (j < k) ? -1 : 1);
+        l = new LinkedList<Short>();
 
         i = 0;
         while (i < nNodes) {
-            visited[i] = false;
+            for (Short neighbour : graph.get(i)) {
+                inDegrees[neighbour]++;
+            }
 
             i++;
         }
 
-        topologicalSort_(source, visited, stack);
+        multiset.add(source);
 
-        while (!stack.empty()) {
-            i = stack.pop();
-            totalCost += nodeCosts[i];
+        while (!multiset.isEmpty()) {
+            current = multiset.pollFirst();
+            l.add(current);
 
-            sb.append(i + 1);
+            for (Short neighbour : graph.get(current)) {
+                inDegrees[neighbour]--;
 
-            if (!stack.isEmpty()) {
-                sb.append("\n");
+                if (inDegrees[neighbour] == 0) {
+                    multiset.add(neighbour);
+                }
             }
         }
 
+        i = 0;
+        while (i < l.size()) {
+            totalCost += nodeCosts[i];
+            sb.append(l.get(i) + 1);
+
+            if (i != l.size() - 1) {
+                sb.append("\n");
+            }
+
+            i++;
+        }
+
         System.out.println(totalCost + "\n" + sb);
-    }
-
-    private void getParallelizableNodes() {
-
     }
 
     private void getParallelizationBottlenecks() {
@@ -186,8 +190,8 @@ public class Main {
         StringTokenizer st;
 
         in = new BufferedReader(new InputStreamReader(System.in));
-
         while ((line = in.readLine()) != null && line.length() > 0) {
+            nVisited = 0;
             nNodes = Short.parseShort(line);
             hasIncomingEdges = new boolean[nNodes];
             nodeCosts = new byte[nNodes];
@@ -222,7 +226,7 @@ public class Main {
 
             line = in.readLine();
 
-            if (hasGraphOneSourceAndSink() && isGraphConnected() && !hasGraphCycle()) {
+            if (hasGraphOneSourceAndSink() && isGraphConnectedAndHasNoCycles()) {
                 switch (line) {
                     case "0":
                         System.out.println("VALID");
@@ -231,7 +235,7 @@ public class Main {
                         topologicalSort();
                         break;
                     case "2":
-                        getParallelizableNodes();
+                        getMinParallelizationCost();
                         break;
                     case "3":
                         getParallelizationBottlenecks();
