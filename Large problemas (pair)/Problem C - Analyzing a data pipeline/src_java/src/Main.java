@@ -119,8 +119,52 @@ public class Main {
         return false;
     }
 
-    private void topologicalSort() {
+    private void topologicalSort_(short v, boolean[] visited, Stack<Short> stack) {
+        visited[v] = true;
+        Collections.reverse(graph.get(v));
 
+        for (Short neighbour : graph.get(v)) {
+            if (!visited[neighbour]) {
+                topologicalSort_(neighbour, visited, stack);
+            }
+        }
+
+        stack.push(v);
+    }
+
+    private void topologicalSort() {
+        boolean[] visited;
+        short i;
+        int totalCost;
+        StringBuilder sb;
+        Stack<Short> stack;
+
+        totalCost = 0;
+        sb = new StringBuilder("");
+        stack = new Stack<Short>();
+        visited = new boolean[nNodes];
+
+        i = 0;
+        while (i < nNodes) {
+            visited[i] = false;
+
+            i++;
+        }
+
+        topologicalSort_(source, visited, stack);
+
+        while (!stack.empty()) {
+            i = stack.pop();
+            totalCost += nodeCosts[i];
+
+            sb.append(i + 1);
+
+            if (!stack.isEmpty()) {
+                sb.append("\n");
+            }
+        }
+
+        System.out.println(totalCost + "\n" + sb);
     }
 
     private void getParallelizableNodes() {
