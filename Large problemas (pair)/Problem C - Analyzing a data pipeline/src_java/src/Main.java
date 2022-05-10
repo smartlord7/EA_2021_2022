@@ -4,12 +4,12 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class Main {
-    private final boolean[] hasIncomingEdges;
-    private final byte[] nodeCosts;
-    private final short nNodes;
+    private boolean[] hasIncomingEdges;
+    private byte[] nodeCosts;
+    private short nNodes;
     private short source;
     private short sink;
-    private final ArrayList<ArrayList<Short>> graph;
+    private ArrayList<ArrayList<Short>> graph;
 
     private boolean hasGraphOneSourceAndSink() {
         boolean hasSource;
@@ -186,60 +186,61 @@ public class Main {
         StringTokenizer st;
 
         in = new BufferedReader(new InputStreamReader(System.in));
-        line = in.readLine();
 
-        nNodes = Short.parseShort(line);
-        hasIncomingEdges = new boolean[nNodes];
-        nodeCosts = new byte[nNodes];
-        graph = new ArrayList<ArrayList<Short>>(nNodes);
+        while ((line = in.readLine()) != null && line.length() > 0) {
+            nNodes = Short.parseShort(line);
+            hasIncomingEdges = new boolean[nNodes];
+            nodeCosts = new byte[nNodes];
+            graph = new ArrayList<ArrayList<Short>>(nNodes);
 
-        i = 0;
-        while (i < nNodes) {
-            graph.add(new ArrayList<Short>());
+            i = 0;
+            while (i < nNodes) {
+                graph.add(new ArrayList<Short>());
 
-            i++;
-        }
+                i++;
+            }
 
-        i = 0;
-        while (i < nNodes) {
+            i = 0;
+            while (i < nNodes) {
+                line = in.readLine();
+                st = new StringTokenizer(line);
+                cost = Byte.parseByte(st.nextToken());
+                nDependencies = Short.parseShort(st.nextToken());
+                nodeCosts[i] = cost;
+
+                j = 0;
+                while (j < nDependencies) {
+                    id = (short) (Short.parseShort(st.nextToken()) - 1);
+                    graph.get(id).add(i);
+                    hasIncomingEdges[i] = true;
+
+                    j++;
+                }
+
+                i++;
+            }
+
             line = in.readLine();
-            st = new StringTokenizer(line);
-            cost = Byte.parseByte(st.nextToken());
-            nDependencies = Short.parseShort(st.nextToken());
-            nodeCosts[i] = cost;
 
-            j = 0;
-            while (j < nDependencies) {
-                id = (short) (Short.parseShort(st.nextToken()) - 1);
-                graph.get(id).add(i);
-                hasIncomingEdges[i] = true;
+            if (hasGraphOneSourceAndSink() && isGraphConnected() && !hasGraphCycle()) {
+                switch (line) {
+                    case "0":
+                        System.out.println("VALID");
+                        break;
+                    case "1":
+                        topologicalSort();
+                        break;
+                    case "2":
+                        getParallelizableNodes();
+                        break;
+                    case "3":
+                        getParallelizationBottlenecks();
+                        break;
+                }
 
-                j++;
+            } else {
+                System.out.println("INVALID");
             }
-
-            i++;
-        }
-
-        line = in.readLine();
-
-        if (hasGraphOneSourceAndSink() && isGraphConnected() && !hasGraphCycle()) {
-            switch (line) {
-                case "0":
-                    System.out.println("VALID");
-                    break;
-                case "1":
-                    topologicalSort();
-                    break;
-                case "2":
-                    getParallelizableNodes();
-                    break;
-                case "3":
-                    getParallelizationBottlenecks();
-                    break;
-            }
-
-        } else {
-            System.out.println("INVALID");
         }
     }
 
