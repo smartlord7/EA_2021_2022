@@ -1,23 +1,121 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class Main {
-    private boolean[] hasIncomingEdges;
-    private byte[] nodeCosts;
-    private ArrayList<ArrayList<Short>> graph;
-
-    private boolean hasGraphCycles() {
-        return false;
-    }
+    private final boolean[] hasIncomingEdges;
+    private final byte[] nodeCosts;
+    private final short nNodes;
+    private short source;
+    private short sink;
+    private final ArrayList<ArrayList<Short>> graph;
 
     private boolean hasGraphOneSourceAndSink() {
-        return false;
+        boolean hasSource;
+        boolean hasSink;
+        short i;
+
+        hasSource = false;
+        hasSink = false;
+        i = 0;
+
+        while (i < nNodes) {
+            if (!hasIncomingEdges[i]) {
+                if (hasSource) {
+                    return false;
+                }
+
+                source = i;
+                hasSource = true;
+            }
+
+            if (graph.get(i).size() == 0) {
+                if (hasSink) {
+                    return false;
+                }
+
+                sink = i;
+                hasSink = true;
+            }
+
+            i++;
+        }
+
+        return true;
     }
 
     private boolean isGraphConnected() {
+        boolean[] visited;
+        short next;
+        int nVisited;
+        Queue<Short> queue;
+
+        visited = new boolean[nNodes];
+        queue = new LinkedList<Short>();
+
+        nVisited = 1;
+        visited[source] = true;
+        queue.add(source);
+
+        while (!queue.isEmpty()) {
+            next = queue.poll();
+
+            for (Short neighbour : graph.get(next)) {
+                if (!visited[neighbour]) {
+                    visited[neighbour] = true;
+                    queue.add(neighbour);
+                    nVisited++;
+                }
+            }
+        }
+
+        return nVisited == nNodes;
+    }
+
+    private boolean hasGraphCycle_(short node, boolean[] visited, boolean[] recStack) {
+        List<Short> neighbours;
+
+        if (recStack[node]) {
+            return true;
+        }
+
+        if (visited[node]) {
+            return false;
+        }
+
+        visited[node] = true;
+        recStack[node] = true;
+        neighbours = graph.get(node);
+
+        for (Short c: neighbours) {
+            if (hasGraphCycle_(c, visited, recStack)) {
+                return true;
+            }
+        }
+
+        recStack[node] = false;
+
+        return false;
+    }
+
+    private boolean hasGraphCycle() {
+        boolean[] visited;
+        boolean[] recStack;
+        short i;
+
+        visited = new boolean[nNodes];
+        recStack = new boolean[nNodes];
+        i = 0;
+
+        while (i < nNodes) {
+            if (hasGraphCycle_(i, visited, recStack)) {
+                return true;
+            }
+
+            i++;
+        }
+
         return false;
     }
 
@@ -34,7 +132,6 @@ public class Main {
     }
 
     public Main() throws IOException {
-        short nNodes;
         byte cost;
         short id;
         short i;
@@ -70,8 +167,8 @@ public class Main {
             j = 0;
             while (j < nDependencies) {
                 id = (short) (Short.parseShort(st.nextToken()) - 1);
-                graph.get(i).add(id);
-                hasIncomingEdges[id] = true;
+                graph.get(id).add(i);
+                hasIncomingEdges[i] = true;
 
                 j++;
             }
@@ -81,7 +178,7 @@ public class Main {
 
         line = in.readLine();
 
-        if (hasGraphCycles() && hasGraphOneSourceAndSink() && isGraphConnected()) {
+        if (hasGraphOneSourceAndSink() && isGraphConnected() && !hasGraphCycle()) {
             switch (line) {
                 case "0":
                     System.out.println("VALID");
