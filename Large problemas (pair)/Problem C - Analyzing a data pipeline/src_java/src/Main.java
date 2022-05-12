@@ -4,10 +4,6 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class Main {
-
-    //TODO Use topological-sort with in-degree
-    //TODO Join cycle detection with connectivity (use DFS)
-
     private boolean[] hasIncomingEdges;
     private byte[] nodeCosts;
     private short nNodes;
@@ -50,40 +46,6 @@ public class Main {
         return true;
     }
 
-    private void getMinParallelizationCost() {
-        boolean[] visited;
-        short next;
-        int minParallelizationCost;
-        int bottleneckCost;
-        Queue<Short> queue;
-
-        visited = new boolean[nNodes];
-        queue = new LinkedList<Short>();
-
-        minParallelizationCost = nodeCosts[source];
-        visited[source] = true;
-        queue.add(source);
-
-        while (!queue.isEmpty()) {
-            next = queue.poll();
-            bottleneckCost = -1;
-            for (Short neighbour : graph.get(next)) {
-                if (!visited[neighbour]) {
-                    visited[neighbour] = true;
-                    queue.add(neighbour);
-                }
-
-                if (nodeCosts[neighbour] > bottleneckCost) {
-                    bottleneckCost = nodeCosts[neighbour];
-                }
-            }
-
-            minParallelizationCost += bottleneckCost;
-        }
-
-        System.out.println(minParallelizationCost);
-    }
-
     private boolean hasGraphCycles(short node, boolean[] visited, boolean[] recStack) {
         List<Short> neighbours;
 
@@ -121,7 +83,7 @@ public class Main {
         return !hasGraphCycles(source, visited, recStack) && nVisited == nNodes;
     }
 
-    private void topologicalSort() {
+    private void getSerialExecutionCost() {
         short i;
         short current;
         short[] inDegrees;
@@ -173,6 +135,47 @@ public class Main {
         }
 
         System.out.println(totalCost + "\n" + sb);
+    }
+
+    private void getParallelExecutionCost_(int node, int[] dp, boolean[] visited) {
+        visited[node] = true;
+
+        for (Short neighbour : graph.get(node)) {
+            if (!visited[neighbour]) {
+                getParallelExecutionCost_(neighbour, dp, visited);
+            }
+
+            dp[node] = Math.max(dp[node], nodeCosts[node] + dp[neighbour]);
+        }
+    }
+
+    private void getParallelExecutionCost() {
+        boolean[] visited;
+        int i;
+        int minCost;
+        int[] memo;
+
+        minCost = 0;
+        memo = new int[nNodes];
+        visited = new boolean[nNodes];
+
+        memo[sink] = nodeCosts[sink];
+
+        i = 0;
+        while (i < nNodes) {
+            getParallelExecutionCost_(i, memo, visited);
+
+            i++;
+        }
+
+        i = 0;
+        while (i < nNodes) {
+            minCost = Math.max(minCost, memo[i]);
+
+            i++;
+        }
+
+        System.out.println(minCost);
     }
 
     private void getParallelizationBottlenecks() {
@@ -232,10 +235,10 @@ public class Main {
                         System.out.println("VALID");
                         break;
                     case "1":
-                        topologicalSort();
+                        getSerialExecutionCost();
                         break;
                     case "2":
-                        getMinParallelizationCost();
+                        getParallelExecutionCost();
                         break;
                     case "3":
                         getParallelizationBottlenecks();
