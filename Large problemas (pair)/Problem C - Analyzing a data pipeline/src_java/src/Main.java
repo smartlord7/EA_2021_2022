@@ -11,6 +11,7 @@ public class Main {
     private short sink;
     private short nVisited;
     private ArrayList<ArrayList<Short>> graph;
+    private ArrayList<ArrayList<Short>> reverseGraph;
 
     private boolean hasGraphOneSourceAndSink() {
         boolean hasSource;
@@ -83,7 +84,7 @@ public class Main {
         return !hasGraphCycles(source, visited, recStack) && nVisited == nNodes;
     }
 
-    private void getSerialExecutionCost() {
+    private LinkedList<Short> getSerialExecutionCost(boolean print) {
         short i;
         short current;
         short[] inDegrees;
@@ -122,22 +123,28 @@ public class Main {
             }
         }
 
-        i = 0;
-        while (i < l.size()) {
-            totalCost += nodeCosts[i];
-            sb.append(l.get(i) + 1);
+        if (print) {
+            i = 0;
+            while (i < l.size()) {
+                totalCost += nodeCosts[i];
+                sb.append(l.get(i) + 1);
 
-            if (i != l.size() - 1) {
-                sb.append("\n");
+                if (i != l.size() - 1) {
+                    sb.append("\n");
+                }
+
+                i++;
             }
 
-            i++;
+            System.out.println(totalCost + "\n" + sb);
+
+            return null;
         }
 
-        System.out.println(totalCost + "\n" + sb);
+        return l;
     }
 
-    private void getParallelExecutionCost_(int node, int[] dp, boolean[] visited) {
+    private void getParallelExecutionCost_(short node, int[] dp, boolean[] visited) {
         visited[node] = true;
 
         for (Short neighbour : graph.get(node)) {
@@ -151,7 +158,7 @@ public class Main {
 
     private void getParallelExecutionCost() {
         boolean[] visited;
-        int i;
+        short i;
         int minCost;
         int[] memo;
 
@@ -178,8 +185,59 @@ public class Main {
         System.out.println(minCost);
     }
 
-    private void getParallelizationBottlenecks() {
+    private void getParallelizationBottlenecks_(ArrayList<ArrayList<Short>> graph, short node, short end, boolean[][] reachable) {
+        reachable[node][node] = true;
 
+        if (node == end) {
+            return;
+        }
+
+        for (Short neighbour : graph.get(node)) {
+            getParallelizationBottlenecks_(graph, neighbour, end, reachable);
+
+            for (int i = 0; i < nNodes; i++) {
+               if (reachable[neighbour][i]) {
+                   reachable[node][i] = true;
+               }
+            }
+        }
+    }
+
+    private void getParallelizationBottlenecks() {
+        boolean[] bottlenecks;
+        boolean[][] reachable;
+        boolean[][] reachable2;
+        LinkedList<Short> orderedNodes;
+
+        reachable = new boolean[nNodes][nNodes];
+        reachable2 = new boolean[nNodes][nNodes];
+        orderedNodes = getSerialExecutionCost(false);
+        bottlenecks = new boolean[nNodes];
+
+        getParallelizationBottlenecks_(graph, source, sink, reachable);
+        getParallelizationBottlenecks_(reverseGraph, sink, source, reachable2);
+
+        for (short i = 0; i < nNodes; i++) {
+            int count = 0;
+
+            for (short j = 0; j < nNodes; j++) {
+                reachable[i][j] = reachable[i][j] || reachable2[i][j];
+
+                if (reachable[i][j]) {
+                    count++;
+                }
+
+                if (count == nNodes) {
+                    bottlenecks[i] = true;
+                }
+            }
+        }
+
+        for (Short node : orderedNodes) {
+            if (bottlenecks[node]) {
+                System.out.println(node + 1);
+            }
+        }
     }
 
     public Main() throws IOException {
@@ -199,10 +257,12 @@ public class Main {
             hasIncomingEdges = new boolean[nNodes];
             nodeCosts = new byte[nNodes];
             graph = new ArrayList<ArrayList<Short>>(nNodes);
+            reverseGraph = new ArrayList<ArrayList<Short>>(nNodes);
 
             i = 0;
             while (i < nNodes) {
                 graph.add(new ArrayList<Short>());
+                reverseGraph.add(new ArrayList<Short>());
 
                 i++;
             }
@@ -219,6 +279,7 @@ public class Main {
                 while (j < nDependencies) {
                     id = (short) (Short.parseShort(st.nextToken()) - 1);
                     graph.get(id).add(i);
+                    reverseGraph.get(i).add(id);
                     hasIncomingEdges[i] = true;
 
                     j++;
@@ -235,7 +296,7 @@ public class Main {
                         System.out.println("VALID");
                         break;
                     case "1":
-                        getSerialExecutionCost();
+                        getSerialExecutionCost(true);
                         break;
                     case "2":
                         getParallelExecutionCost();
