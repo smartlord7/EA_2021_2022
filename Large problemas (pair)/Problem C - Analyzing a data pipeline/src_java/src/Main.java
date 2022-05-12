@@ -63,7 +63,7 @@ public class Main {
         recStack[node] = true;
         neighbours = graph.get(node);
 
-        for (Short c: neighbours) {
+        for (short c: neighbours) {
             if (hasGraphCycles(c, visited, recStack)) {
                 return true;
             }
@@ -101,7 +101,7 @@ public class Main {
 
         i = 0;
         while (i < nNodes) {
-            for (Short neighbour : graph.get(i)) {
+            for (short neighbour : graph.get(i)) {
                 inDegrees[neighbour]++;
             }
 
@@ -116,7 +116,7 @@ public class Main {
             if (!detectBottlenecks || (source == current || sink == current || isBottleneck(current))) {
                 l.add(current);
             }
-            for (Short neighbour : graph.get(current)) {
+            for (short neighbour : graph.get(current)) {
                 inDegrees[neighbour]--;
 
                 if (inDegrees[neighbour] == 0) {
@@ -138,7 +138,6 @@ public class Main {
                 System.out.println(l.get(i) + 1);
             }
 
-
             i++;
         }
 
@@ -151,7 +150,7 @@ public class Main {
     private void getParallelExecutionCost_(short node, int[] dp, boolean[] visited) {
         visited[node] = true;
 
-        for (Short neighbour : graph.get(node)) {
+        for (short neighbour : graph.get(node)) {
             if (!visited[neighbour]) {
                 getParallelExecutionCost_(neighbour, dp, visited);
             }
@@ -195,7 +194,7 @@ public class Main {
 
         count = 1;
 
-        for (Short neighbour : graph.get(node)) {
+        for (short neighbour : graph.get(node)) {
             if (visited[node]) {
                 count += isBottleneck_(graph, neighbour, visited);
             }
