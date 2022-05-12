@@ -84,19 +84,19 @@ public class Main {
         return !hasGraphCycles(source, visited, recStack) && nVisited == nNodes;
     }
 
-    private LinkedList<Short> getSerialExecutionCost(boolean print) {
+    private void getSerialExecution(boolean detectBottlenecks) {
         short i;
         short current;
         short[] inDegrees;
         int totalCost;
         StringBuilder sb;
-        TreeSet<Short> multiset;
+        PriorityQueue<Short> pQueue;
         LinkedList<Short> l;
 
         inDegrees = new short[nNodes];
         totalCost = 0;
         sb = new StringBuilder();
-        multiset = new TreeSet<Short>((j, k) -> (j < k) ? -1 : 1);
+        pQueue = new PriorityQueue<Short>((j, k) -> (j < k) ? -1 : 1);
         l = new LinkedList<Short>();
 
         i = 0;
@@ -108,40 +108,44 @@ public class Main {
             i++;
         }
 
-        multiset.add(source);
+        pQueue.add(source);
 
-        while (!multiset.isEmpty()) {
-            current = multiset.pollFirst();
-            l.add(current);
+        while (!pQueue.isEmpty()) {
+            current = pQueue.poll();
 
+            if (!detectBottlenecks || (source == current || sink == current || isBottleneck(current))) {
+                l.add(current);
+            }
             for (Short neighbour : graph.get(current)) {
                 inDegrees[neighbour]--;
 
                 if (inDegrees[neighbour] == 0) {
-                    multiset.add(neighbour);
+                    pQueue.add(neighbour);
                 }
             }
         }
 
-        if (print) {
-            i = 0;
-            while (i < l.size()) {
+        i = 0;
+        while (i < l.size()) {
+            if (!detectBottlenecks) {
                 totalCost += nodeCosts[i];
                 sb.append(l.get(i) + 1);
 
                 if (i != l.size() - 1) {
                     sb.append("\n");
                 }
-
-                i++;
+            } else {
+                System.out.println(l.get(i) + 1);
             }
 
-            System.out.println(totalCost + "\n" + sb);
 
-            return null;
+            i++;
         }
 
-        return l;
+
+        if (!detectBottlenecks) {
+            System.out.println(totalCost + "\n" + sb);
+        }
     }
 
     private void getParallelExecutionCost_(short node, int[] dp, boolean[] visited) {
@@ -185,59 +189,31 @@ public class Main {
         System.out.println(minCost);
     }
 
-    private void getParallelizationBottlenecks_(ArrayList<ArrayList<Short>> graph, short node, short end, boolean[][] reachable) {
-        reachable[node][node] = true;
+    private short isBottleneck_(ArrayList<ArrayList<Short>> graph, short node, boolean[] visited) {
+        short count;
+        visited[node] = true;
 
-        if (node == end) {
-            return;
-        }
+        count = 1;
 
         for (Short neighbour : graph.get(node)) {
-            getParallelizationBottlenecks_(graph, neighbour, end, reachable);
-
-            for (int i = 0; i < nNodes; i++) {
-               if (reachable[neighbour][i]) {
-                   reachable[node][i] = true;
-               }
+            if (visited[node]) {
+                count += isBottleneck_(graph, neighbour, visited);
             }
         }
+
+        return count;
     }
 
-    private void getParallelizationBottlenecks() {
-        boolean[] bottlenecks;
-        boolean[][] reachable;
-        boolean[][] reachable2;
-        LinkedList<Short> orderedNodes;
+    private boolean isBottleneck(short node) {
+        boolean[] visited;
+        int totalNodes;
 
-        reachable = new boolean[nNodes][nNodes];
-        reachable2 = new boolean[nNodes][nNodes];
-        orderedNodes = getSerialExecutionCost(false);
-        bottlenecks = new boolean[nNodes];
+        visited = new boolean[nNodes];
 
-        getParallelizationBottlenecks_(graph, source, sink, reachable);
-        getParallelizationBottlenecks_(reverseGraph, sink, source, reachable2);
+        totalNodes = isBottleneck_(graph, node, visited) +
+                isBottleneck_(reverseGraph, node, visited) - 1;
 
-        for (short i = 0; i < nNodes; i++) {
-            int count = 0;
-
-            for (short j = 0; j < nNodes; j++) {
-                reachable[i][j] = reachable[i][j] || reachable2[i][j];
-
-                if (reachable[i][j]) {
-                    count++;
-                }
-
-                if (count == nNodes) {
-                    bottlenecks[i] = true;
-                }
-            }
-        }
-
-        for (Short node : orderedNodes) {
-            if (bottlenecks[node]) {
-                System.out.println(node + 1);
-            }
-        }
+        return totalNodes >= nNodes;
     }
 
     public Main() throws IOException {
@@ -296,13 +272,13 @@ public class Main {
                         System.out.println("VALID");
                         break;
                     case "1":
-                        getSerialExecutionCost(true);
+                        getSerialExecution(false);
                         break;
                     case "2":
                         getParallelExecutionCost();
                         break;
                     case "3":
-                        getParallelizationBottlenecks();
+                        getSerialExecution(true);
                         break;
                 }
 
