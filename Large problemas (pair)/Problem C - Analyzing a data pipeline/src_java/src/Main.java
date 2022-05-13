@@ -195,7 +195,7 @@ public class Main {
         count = 1;
 
         for (short neighbour : graph.get(node)) {
-            if (visited[node]) {
+            if (!visited[neighbour]) {
                 count += isBottleneck_(graph, neighbour, visited);
             }
         }
@@ -212,7 +212,7 @@ public class Main {
         totalNodes = isBottleneck_(graph, node, visited) +
                 isBottleneck_(reverseGraph, node, visited) - 1;
 
-        return totalNodes >= nNodes;
+        return totalNodes == nNodes;
     }
 
     public Main() throws IOException {
