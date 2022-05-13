@@ -12,6 +12,7 @@ public class Main {
     private short nVisited;
     private ArrayList<ArrayList<Short>> graph;
     private ArrayList<ArrayList<Short>> reverseGraph;
+    private final int MAX_N_NODES = 1001;
 
     private boolean hasGraphOneSourceAndSink() {
         boolean hasSource;
@@ -78,8 +79,8 @@ public class Main {
         boolean[] visited;
         boolean[] recStack;
 
-        visited = new boolean[nNodes];
-        recStack = new boolean[nNodes];
+        visited = new boolean[MAX_N_NODES];
+        recStack = new boolean[MAX_N_NODES];
 
         return !hasGraphCycles(source, visited, recStack) && nVisited == nNodes;
     }
@@ -93,7 +94,7 @@ public class Main {
         PriorityQueue<Short> pQueue;
         LinkedList<Short> l;
 
-        inDegrees = new short[nNodes];
+        inDegrees = new short[MAX_N_NODES];
         totalCost = 0;
         sb = new StringBuilder();
         pQueue = new PriorityQueue<Short>((j, k) -> (j < k) ? -1 : 1);
@@ -166,8 +167,8 @@ public class Main {
         int[] memo;
 
         minCost = 0;
-        memo = new int[nNodes];
-        visited = new boolean[nNodes];
+        memo = new int[MAX_N_NODES];
+        visited = new boolean[MAX_N_NODES];
 
         memo[sink] = nodeCosts[sink];
 
@@ -202,12 +203,12 @@ public class Main {
 
         return count;
     }
-
+//dss
     private boolean isBottleneck(short node) {
         boolean[] visited;
         int totalNodes;
 
-        visited = new boolean[nNodes];
+        visited = new boolean[MAX_N_NODES];
 
         totalNodes = isBottleneck_(graph, node, visited) +
                 isBottleneck_(reverseGraph, node, visited) - 1;
@@ -229,8 +230,8 @@ public class Main {
         while ((line = in.readLine()) != null && line.length() > 0) {
             nVisited = 0;
             nNodes = Short.parseShort(line);
-            hasIncomingEdges = new boolean[nNodes];
-            nodeCosts = new byte[nNodes];
+            hasIncomingEdges = new boolean[MAX_N_NODES];
+            nodeCosts = new byte[MAX_N_NODES];
             graph = new ArrayList<ArrayList<Short>>(nNodes);
             reverseGraph = new ArrayList<ArrayList<Short>>(nNodes);
 
